@@ -9,7 +9,18 @@ close all
 
 % read an image
 im = im2double(imread('outdoor_small.jpg'));
-
+catImage = imread('2008_000062.jpg');
+catCtrs = load('cat.mat');
+catSize = size(catImage);
+foregroundSeeds = fliplr(catCtrs.ctrs);
+backgroundSeeds = [[1:catSize(1)]' ones(catSize(1),1)];
+%backgroundSeeds = [backgroundSeeds; [[1:catSize(1)]' ones(catSize(1),1)*catSize(2)]];
+catDc = getGraphCutComponents(0.4,100,foregroundSeeds,backgroundSeeds,catImage,30);
+catSc = ones(2) - eye(2);
+[catHc catVc] = SpatialCues(im2double(catImage));
+catGhc = GraphCut('open',catDc,catSc,exp(-catVc),exp(-catHc));
+[catGhc catL] = GraphCut('expand',catGhc);
+catGhc = GraphCut('close',catGhc);
 sz = size(im);
 
 % try to segment the image into k different regions
@@ -51,9 +62,11 @@ gch = GraphCut('open', Dc, 10*Sc, exp(-Vc*5), exp(-Hc*5));
 gch = GraphCut('close', gch);
 
 % show results
-imshow(im);
+%imshow(im);
+imshow(im2double(catImage));
 hold on;
-PlotLabels(L);
+PlotLabels(catL);
+%PlotLabels(L);
 
 
 
