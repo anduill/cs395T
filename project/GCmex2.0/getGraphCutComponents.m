@@ -1,6 +1,7 @@
 %fgSeeds and bgSeeds are lists of (row,col) coordinates as Nx2 dimensional matrices.
 %fliplr to reverse order of coordinates
 function [dataCost] = getGraphCutComponents(lambda,numBins,fgSeeds,bgSeeds,image,sampleWindowSize)
+    fgSeeds = round(fgSeeds);
     sz = size(image);
     [foregroundHist foregroundClusters] = getColorHistogramFromCoordinates(numBins,image,fliplr(fgSeeds),sampleWindowSize,sampleWindowSize);
     [backgroundHist backgroundClusters] = getColorHistogramFromCoordinates(numBins,image,fliplr(bgSeeds),sampleWindowSize,sampleWindowSize);

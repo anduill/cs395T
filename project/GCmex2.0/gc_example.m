@@ -9,22 +9,39 @@ close all
 
 % read an image
 im = im2double(imread('outdoor_small.jpg'));
+
 catImage = imread('2008_000062.jpg');
+im = im2double(catImage);
+sz = size(catImage);
 catCtrs = load('cat.mat');
 catSize = size(catImage);
 foregroundSeeds = fliplr(catCtrs.ctrs);
 backgroundSeeds = [[1:catSize(1)]' ones(catSize(1),1)];
 %backgroundSeeds = [backgroundSeeds; [[1:catSize(1)]' ones(catSize(1),1)*catSize(2)]];
-catDc = getGraphCutComponents(0.4,100,foregroundSeeds,backgroundSeeds,catImage,30);
+%catDc = getGraphCutComponents(0.4,100,foregroundSeeds,backgroundSeeds,catImage,30);
+load('cat_corrected_Dc.mat');
+%load('newCatDc');
+%catDc = newCatDc;
+offset = abs(min(min(catDc(:,:,2))));
+catDc(:,:,2) = catDc(:,:,2) + offset*ones(sz(1),sz(2));
+
+catDc_norm = catDc(:,:,2)/norm(catDc(:,:,2));
+figure, imshow(catDc_norm);
+
 catSc = ones(2) - eye(2);
 [catHc catVc] = SpatialCues(im2double(catImage));
-catGhc = GraphCut('open',catDc,catSc,exp(-catVc),exp(-catHc));
+vcMean = sum(sum(catVc))/(sz(1)*sz(2));
+hcMean = sum(sum(catHc))/(sz(1)*sz(2));
+catGhc = GraphCut('open',catDc,catSc,exp(-catVc/vcMean),exp(-catHc/hcMean));
 [catGhc catL] = GraphCut('expand',catGhc);
 catGhc = GraphCut('close',catGhc);
 sz = size(im);
 
+figure, imshow(double(catL));
+
+
 % try to segment the image into k different regions
-k = 4;
+k = 2;
 
 % color space distance
 distance = 'sqEuclidean';
@@ -62,11 +79,11 @@ gch = GraphCut('open', Dc, 10*Sc, exp(-Vc*5), exp(-Hc*5));
 gch = GraphCut('close', gch);
 
 % show results
-%imshow(im);
-imshow(im2double(catImage));
+imshow(im);
+%imshow(im2double(catImage));
 hold on;
-PlotLabels(catL);
-%PlotLabels(L);
+%PlotLabels(catL);
+PlotLabels(L);
 
 
 
