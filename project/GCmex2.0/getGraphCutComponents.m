@@ -8,6 +8,14 @@ function [dataCost] = getGraphCutComponents(lambda,numBins,fgSeeds,bgSeeds,image
     reshapedCat = reshape(double(image),sz(1)*sz(2),3);
     completeForeGroundDistances = dist2(reshapedCat,foregroundClusters);
     completeBackGroundDistances = dist2(reshapedCat,backgroundClusters);
+    sumOfForegroundHist = sum(foregroundHist);
+    sumOfBackgroundHist = sum(backgroundHist);
+    completeLogProbOfForegroundHist = log(double(foregroundHist/sumOfForegroundHist));
+    completeLogProbObBackgroundHist = log(double(backgroundHist/sumOfBackgroundHist));
+    minimumValue = min(completeLogProbOfForegroundHist) - max(completeLogProbObBackgroundHist);
+    maximumValue = max(completeLogProbOfForegroundHist) - min(completeLogProbObBackgroundHist);
+    maxDifference = maximumValue - minimumValue;
+    
     % calculate the data cost for foreground/background (1 is foreground,
     % and 2 is background).
     Dc = zeros([sz(1:2) 2],'single'); 
@@ -20,27 +28,31 @@ function [dataCost] = getGraphCutComponents(lambda,numBins,fgSeeds,bgSeeds,image
             
             [dummyVal foregroundHistIndex] = min(foregroundClusterDistances);
             [dummyVal backgroundHistIndex] = min(backgroundClusterDistances);
-            probOfForegroundPixel = double(sum(foregroundHist))\double(foregroundHist(foregroundHistIndex));
-            probOfBackgroundPixel = double(sum(backgroundHist))\double(backgroundHist(backgroundHistIndex));
+            logProbOfForegroundPixel = completeLogProbOfForegroundHist(foregroundHistIndex);
+            logProbOfBackgroundPixel = completeLogProbObBackgroundHist(backgroundHistIndex);
             memberOfForeground = max(ismember(fgSeeds,[rowIndex,colIndex],'rows'));
             memberOfBackground = max(ismember(bgSeeds,[rowIndex,colIndex],'rows'));
             if memberOfBackground
                 if ~memberOfForeground
-                    Dc(rowIndex,colIndex,1) = inf;
-                    Dc(rowIndex,colIndex,2) = log(probOfForegroundPixel) - log(probOfBackgroundPixel) + lambda;
+                    Dc(rowIndex,colIndex,1) = 255;
+                    logDifference = logProbOfForegroundPixel - logProbOfBackgroundPixel;
+                    Dc(rowIndex,colIndex,2) = abs(logDifference/maxDifference)*255 + lambda;
                 end
             else
                 if memberOfForeground
                     Dc(rowIndex,colIndex,1) = 0;
-                    Dc(rowIndex,colIndex,2) = inf;
+                    Dc(rowIndex,colIndex,2) = 255;
                 else
                     Dc(rowIndex,colIndex,1) = 0;
-                    Dc(rowIndex,colIndex,2) = log(probOfForegroundPixel) - log(probOfBackgroundPixel) + lambda;
+                    logDifference = logProbOfForegroundPixel - logProbOfBackgroundPixel;
+                    Dc(rowIndex,colIndex,2) = abs(logDifference/maxDifference)*255 + lambda;
                 end
             end
             
         end
     end
+    secondChannelMedian = median(median(Dc(:,:,2)));
+    Dc(:,2:sz(2),1) = Dc(:,2:sz(2),1) + ones(sz(1),sz(2)-1)*secondChannelMedian;
     dataCost = Dc;
     
 end

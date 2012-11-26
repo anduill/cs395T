@@ -18,26 +18,26 @@ catSize = size(catImage);
 foregroundSeeds = fliplr(catCtrs.ctrs);
 backgroundSeeds = [[1:catSize(1)]' ones(catSize(1),1)];
 %backgroundSeeds = [backgroundSeeds; [[1:catSize(1)]' ones(catSize(1),1)*catSize(2)]];
-%catDc = getGraphCutComponents(0.4,100,foregroundSeeds,backgroundSeeds,catImage,30);
-load('cat_corrected_Dc.mat');
+catDc = getGraphCutComponents(10,100,foregroundSeeds,backgroundSeeds,catImage,30);
+%load('cat_normalized_Dc.mat');
 %load('newCatDc');
 %catDc = newCatDc;
 offset = abs(min(min(catDc(:,:,2))));
 catDc(:,:,2) = catDc(:,:,2) + offset*ones(sz(1),sz(2));
 
 catDc_norm = catDc(:,:,2)/norm(catDc(:,:,2));
-figure, imshow(catDc_norm);
+%figure, imshow(catDc_norm);
 
 catSc = ones(2) - eye(2);
 [catHc catVc] = SpatialCues(im2double(catImage));
 vcMean = sum(sum(catVc))/(sz(1)*sz(2));
 hcMean = sum(sum(catHc))/(sz(1)*sz(2));
-catGhc = GraphCut('open',catDc,catSc,exp(-catVc/vcMean),exp(-catHc/hcMean));
+catGhc = GraphCut('open',catDc,catSc,exp(-catVc*5),exp(-catHc*5));
 [catGhc catL] = GraphCut('expand',catGhc);
 catGhc = GraphCut('close',catGhc);
 sz = size(im);
 
-figure, imshow(double(catL));
+%figure, imshow(double(catL));
 
 
 % try to segment the image into k different regions
@@ -79,11 +79,11 @@ gch = GraphCut('open', Dc, 10*Sc, exp(-Vc*5), exp(-Hc*5));
 gch = GraphCut('close', gch);
 
 % show results
-imshow(im);
-%imshow(im2double(catImage));
+%imshow(im);
+imshow(im2double(catImage));
 hold on;
-%PlotLabels(catL);
-PlotLabels(L);
+PlotLabels(catL);
+%PlotLabels(L);
 
 
 
