@@ -29,6 +29,8 @@ function [dataCost] = getGraphCutComponents(lambda,numBins,fgSeeds,bgSeeds,image
     
     for colIndex=1:sz(2)
         for rowIndex=1:sz(1)
+            fprintf('row: %d\n',rowIndex);
+            fprintf('col: %d\n',colIndex);
             foregroundClusterDistances = completeForeGroundDistances(rowIndex+sz(1)*(colIndex-1),:);
             backgroundClusterDistances = completeBackGroundDistances(rowIndex+sz(1)*(colIndex-1),:);
             
