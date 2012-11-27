@@ -3,11 +3,17 @@
 function [dataCost] = getGraphCutComponents(lambda,numBins,fgSeeds,bgSeeds,image,sampleWindowSize)
     fgSeeds = round(fgSeeds);
     sz = size(image);
-    [foregroundHist foregroundClusters] = getColorHistogramFromCoordinates(numBins,image,fliplr(fgSeeds),sampleWindowSize,sampleWindowSize);
-    [backgroundHist backgroundClusters] = getColorHistogramFromCoordinates(numBins,image,fliplr(bgSeeds),sampleWindowSize,sampleWindowSize);
+    [dummyVals imageClusters] = getImageClusters(image,numBins);
+    foregroundRGBValues = getForegroundRGBValues(fliplr(fgSeeds),image,sampleWindowSize,sampleWindowSize);
+    backgroundRGBValues = getBackgroundRGBValues(image,sampleWindowSize);
+    foregroundHist = getHistogramFromRGBValues(imageClusters,foregroundRGBValues);
+    backgroundHist = getHistogramFromRGBValues(imageClusters,backgroundRGBValues);
+    
+    %[foregroundHist foregroundClusters] = getColorHistogramFromCoordinates(numBins,image,fliplr(fgSeeds),sampleWindowSize,sampleWindowSize);
+    %[backgroundHist backgroundClusters] = getColorHistogramFromCoordinates(numBins,image,fliplr(bgSeeds),sampleWindowSize,sampleWindowSize);
     reshapedCat = reshape(double(image),sz(1)*sz(2),3);
-    completeForeGroundDistances = dist2(reshapedCat,foregroundClusters);
-    completeBackGroundDistances = dist2(reshapedCat,backgroundClusters);
+    completeForeGroundDistances = dist2(reshapedCat,imageClusters);
+    completeBackGroundDistances = dist2(reshapedCat,imageClusters);
     sumOfForegroundHist = sum(foregroundHist);
     sumOfBackgroundHist = sum(backgroundHist);
     completeLogProbOfForegroundHist = log(double(foregroundHist/sumOfForegroundHist));
