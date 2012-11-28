@@ -9,58 +9,43 @@ function [dataCost] = getGraphCutComponents(lambda,numBins,fgSeeds,bgSeeds,image
     foregroundHist = getHistogramFromRGBValues(imageClusters,foregroundRGBValues);
     backgroundHist = getHistogramFromRGBValues(imageClusters,backgroundRGBValues);
     
-    %[foregroundHist foregroundClusters] = getColorHistogramFromCoordinates(numBins,image,fliplr(fgSeeds),sampleWindowSize,sampleWindowSize);
-    %[backgroundHist backgroundClusters] = getColorHistogramFromCoordinates(numBins,image,fliplr(bgSeeds),sampleWindowSize,sampleWindowSize);
+ 
     reshapedCat = reshape(double(image),sz(1)*sz(2),3);
     completeForeGroundDistances = dist2(reshapedCat,imageClusters);
     completeBackGroundDistances = dist2(reshapedCat,imageClusters);
     sumOfForegroundHist = sum(foregroundHist);
     sumOfBackgroundHist = sum(backgroundHist);
+    
     completeLogProbOfForegroundHist = log(double(foregroundHist/sumOfForegroundHist));
     completeLogProbObBackgroundHist = log(double(backgroundHist/sumOfBackgroundHist));
     minimumValue = min(completeLogProbOfForegroundHist) - max(completeLogProbObBackgroundHist);
     maximumValue = max(completeLogProbOfForegroundHist) - min(completeLogProbObBackgroundHist);
     maxDifference = maximumValue - minimumValue;
     
+    [distances foregroundIndices] = min(completeForeGroundDistances');
+    [distances backgroundIndices] = min(completeBackGroundDistances');
+    
+    for histIndex=1:numel(foregroundHist)
+        foregroundIndices(foregroundIndices==histIndex)=completeLogProbOfForegroundHist(histIndex);
+        backgroundIndices(backgroundIndices==histIndex)=completeLogProbObBackgroundHist(histIndex);
+    end
+    scaledSecondChannel = abs((foregroundIndices-backgroundIndices)/maxDifference)*255+lambda;
+    scaledSecondChannel = reshape(scaledSecondChannel,sz(1),sz(2));
+    secondChannelMedian = median(median(scaledSecondChannel));
+    firstChannel = ones(sz(1),sz(2))*secondChannelMedian;
+    
+    for bgSeedRow=bgSeeds(:,1:2)'
+        firstChannel(bgSeedRow(1),bgSeedRow(2)) = 255;
+    end
+    for fgSeedRow=fgSeeds(:,1:2)'
+        scaledSecondChannel(fgSeedRow(1),fgSeedRow(2))=255;
+    end
     % calculate the data cost for foreground/background (1 is foreground,
     % and 2 is background).
-    Dc = zeros([sz(1:2) 2],'single'); 
-    
-    
-    for colIndex=1:sz(2)
-        for rowIndex=1:sz(1)
-            fprintf('row: %d\n',rowIndex);
-            fprintf('col: %d\n',colIndex);
-            foregroundClusterDistances = completeForeGroundDistances(rowIndex+sz(1)*(colIndex-1),:);
-            backgroundClusterDistances = completeBackGroundDistances(rowIndex+sz(1)*(colIndex-1),:);
-            
-            [dummyVal foregroundHistIndex] = min(foregroundClusterDistances);
-            [dummyVal backgroundHistIndex] = min(backgroundClusterDistances);
-            logProbOfForegroundPixel = completeLogProbOfForegroundHist(foregroundHistIndex);
-            logProbOfBackgroundPixel = completeLogProbObBackgroundHist(backgroundHistIndex);
-            memberOfForeground = max(ismember(fgSeeds,[rowIndex,colIndex],'rows'));
-            memberOfBackground = max(ismember(bgSeeds,[rowIndex,colIndex],'rows'));
-            if memberOfBackground
-                if ~memberOfForeground
-                    Dc(rowIndex,colIndex,1) = 255;
-                    logDifference = logProbOfForegroundPixel - logProbOfBackgroundPixel;
-                    Dc(rowIndex,colIndex,2) = abs(logDifference/maxDifference)*255 + lambda;
-                end
-            else
-                if memberOfForeground
-                    Dc(rowIndex,colIndex,1) = 0;
-                    Dc(rowIndex,colIndex,2) = 255;
-                else
-                    Dc(rowIndex,colIndex,1) = 0;
-                    logDifference = logProbOfForegroundPixel - logProbOfBackgroundPixel;
-                    Dc(rowIndex,colIndex,2) = abs(logDifference/maxDifference)*255 + lambda;
-                end
-            end
-            
-        end
-    end
-    secondChannelMedian = median(median(Dc(:,:,2)));
-    Dc(:,2:sz(2),1) = Dc(:,2:sz(2),1) + ones(sz(1),sz(2)-1)*secondChannelMedian;
+    Dc = zeros([sz(1:2) 2],'single');
+    Dc(:,:,1) = firstChannel;
+    Dc(:,:,2) = scaledSecondChannel;
+      
     dataCost = Dc;
     
 end
