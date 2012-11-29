@@ -7,48 +7,56 @@ function gc_example()
 
 close all
 
-% read an image
-im = im2double(imread('outdoor_small.jpg'));
+load('Cars/CarsCtrs.mat');
 
-catImage = imread('2008_000062.jpg');
-personImage = imread('2008_000016.jpg');
-im = im2double(catImage);
-sz = size(personImage);
-catCtrs = load('monitor.mat');
-catSize = size(personImage);
-foregroundSeeds = fliplr(catCtrs.ctrs);
-%randomForegroundSeeds = [randi(sz(1),[20 1]) randi(sz(2),[20 1])];
-%foregroundSeeds = randomForegroundSeeds;
-backgroundSeeds = [[1:catSize(1)]' ones(catSize(1),1)];
-%backgroundSeeds = [backgroundSeeds; [[1:catSize(1)]' ones(catSize(1),1)*catSize(2)]];
-catDc = getGraphCutComponents(20,100,foregroundSeeds,backgroundSeeds,personImage,30);
-%load('cat_normalized_Dc.mat');
-%load('newCatDc');
-%catDc = newCatDc;
-offset = abs(min(min(catDc(:,:,2))));
-catDc(:,:,2) = catDc(:,:,2) + offset*ones(sz(1),sz(2));
-
-catDc_norm = catDc(:,:,2)/norm(catDc(:,:,2));
-%figure, imshow(catDc_norm);
-
-catSc = ones(2) - eye(2);
-[catHc catVc] = SpatialCues(im2double(personImage));
-vcMean = sum(sum(catVc))/(sz(1)*sz(2));
-hcMean = sum(sum(catHc))/(sz(1)*sz(2));
-catGhc = GraphCut('open',catDc,catSc,exp(-catVc*5),exp(-catHc*5));
-[catGhc catL] = GraphCut('expand',catGhc);
-catGhc = GraphCut('close',catGhc);
-sz = size(im);
-
-%figure, imshow(double(catL));
-
-
-% show results
-%imshow(im);
-imshow(im2double(personImage));
-hold on;
-PlotLabels(catL);
-%PlotLabels(L);
+for i=1:numel(imgCtrs)
+    image = imread(strcat('Cars/',imgCtrs(i).name));
+    ctrs = imgCtrs(i).ctrs;
+    sz = size(image);
+    imageForegroundSeeds = fliplr(ctrs);
+    imageRandomForegroundSeeds = [randi(sz(1),[20 1]) randi(sz(2),[20 1])];
+    imageBackgroundSeeds = [[1:sz(1)]' ones(sz(1),1); ones(sz(2),1) [1:sz(2)]'; [1:sz(1)]' ones(sz(1),1)*sz(2); ones(sz(2),1)*sz(1) [1:sz(2)]'];
+    
+    continueLoop = 1;
+    counter = 0;
+    while (continueLoop & (counter < 50))       
+        try
+            Dc = getGraphCutComponents(25,40,imageForegroundSeeds,imageBackgroundSeeds,image,30);            
+            continueLoop = 0;
+        catch exception
+            counter = counter + 1
+        end
+    end
+    if counter >= 50
+        continue;
+    end
+    Sc = ones(2) - eye(2);
+    [Hc Vc] = SpatialCues(im2double(image));
+    Ghc = GraphCut('open',Dc,Sc,exp(-Vc*5),exp(-Hc*5));
+    [Ghc L] = GraphCut('expand',Ghc);
+    Ghc = GraphCut('close',Ghc);
+    
+    continueLoop = 1;
+    counter = 0;
+    while (continueLoop & (counter < 50))       
+        try            
+            randDc = getGraphCutComponents(25,40,imageRandomForegroundSeeds,imageBackgroundSeeds,image,30);
+            continueLoop = 0;
+        catch exception
+            counter = counter + 1
+        end
+    end
+    if counter >= 50
+        continue;
+    end
+    Ghc = GraphCut('open',randDc,Sc,exp(-Vc*5),exp(-Hc*5));
+    [Ghc randL] = GraphCut('expand',Ghc);
+    Ghc = GraphCut('close',Ghc);
+    save(strcat('carsResult/',imgCtrs(i).name,'_foreGround.mat'),'L');
+    save(strcat('carsResult/',imgCtrs(i).name,'_random.mat'),'randL');
+    
+    fprintf(strcat('Done with image: %s\n',imgCtrs(i).name));
+end
 
 
 
