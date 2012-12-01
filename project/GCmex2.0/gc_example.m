@@ -8,6 +8,7 @@ function gc_example()
 close all
 
 load('Cars/CarsCtrs.mat');
+segResults = imgCtrs;
 
 for i=1:numel(imgCtrs)
     image = imread(strcat('Cars/',imgCtrs(i).name));
@@ -21,7 +22,7 @@ for i=1:numel(imgCtrs)
     counter = 0;
     while (continueLoop & (counter < 50))       
         try
-            Dc = getGraphCutComponents(25,40,imageForegroundSeeds,imageBackgroundSeeds,image,30);            
+            Dc = getGraphCutComponents(25,40-counter,imageForegroundSeeds,imageBackgroundSeeds,image,30);            
             continueLoop = 0;
         catch exception
             counter = counter + 1
@@ -40,7 +41,7 @@ for i=1:numel(imgCtrs)
     counter = 0;
     while (continueLoop & (counter < 50))       
         try            
-            randDc = getGraphCutComponents(25,40,imageRandomForegroundSeeds,imageBackgroundSeeds,image,30);
+            randDc = getGraphCutComponents(25,40-counter,imageRandomForegroundSeeds,imageBackgroundSeeds,image,30);
             continueLoop = 0;
         catch exception
             counter = counter + 1
@@ -52,11 +53,23 @@ for i=1:numel(imgCtrs)
     Ghc = GraphCut('open',randDc,Sc,exp(-Vc*5),exp(-Hc*5));
     [Ghc randL] = GraphCut('expand',Ghc);
     Ghc = GraphCut('close',Ghc);
-    save(strcat('carsResult/',imgCtrs(i).name,'_foreGround.mat'),'L');
-    save(strcat('carsResult/',imgCtrs(i).name,'_random.mat'),'randL');
+    L = abs(L - 1);
+    randL = abs(randL - 1);
+    
+    segResults(i).L = L;
+    segResults(i).randL = randL;
+    segResults(i).randSeeds = fliplr(imageRandomForegroundSeeds);
+    foregroundImageSeg = uint8(L*255);
+    randomImageSeg = uint8(randL*255); 
+    foregroundImageName = strrep(imgCtrs(i).name,'.jpg','_foreground.bmp');
+    randomImageName = strrep(imgCtrs(i).name,'.jpg','_random.bmp');
+        
+    imwrite(foregroundImageSeg,strcat('carsResult/',foregroundImageName),'bmp');
+    imwrite(randomImageSeg,strcat('carsResult/',randomImageName),'bmp');
     
     fprintf(strcat('Done with image: %s\n',imgCtrs(i).name));
 end
+save(strcat('carsResult/segMat','.mat'),'segResults');
 
 
 

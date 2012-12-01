@@ -9,6 +9,10 @@ function [dataCost] = getGraphCutComponents(lambda,numBins,fgSeeds,bgSeeds,image
     foregroundHist = getHistogramFromRGBValues(imageClusters,foregroundRGBValues);
     backgroundHist = getHistogramFromRGBValues(imageClusters,backgroundRGBValues);
     
+    probForeGround = foregroundHist/sum(foregroundHist);
+    foregroundEntropy = -probForeGround*log(probForeGround)';
+    probBackground = backgroundHist/sum(backgroundHist);
+    backgroundEntropy = -probBackground*log(probBackground)';
  
     reshapedCat = reshape(double(image),sz(1)*sz(2),3);
     completeForeGroundDistances = dist2(reshapedCat,imageClusters);
@@ -16,8 +20,8 @@ function [dataCost] = getGraphCutComponents(lambda,numBins,fgSeeds,bgSeeds,image
     sumOfForegroundHist = sum(foregroundHist);
     sumOfBackgroundHist = sum(backgroundHist);
     
-    completeLogProbOfForegroundHist = log(double(foregroundHist/sumOfForegroundHist));
-    completeLogProbObBackgroundHist = log(double(backgroundHist/sumOfBackgroundHist));
+    completeLogProbOfForegroundHist = double(foregroundHist/sumOfForegroundHist/foregroundEntropy);
+    completeLogProbObBackgroundHist = double(backgroundHist/sumOfBackgroundHist/backgroundEntropy);
     minimumValue = min(completeLogProbOfForegroundHist) - max(completeLogProbObBackgroundHist);
     maximumValue = max(completeLogProbOfForegroundHist) - min(completeLogProbObBackgroundHist);
     maxDifference = maximumValue - minimumValue;
