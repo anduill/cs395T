@@ -1,4 +1,4 @@
-function gc_example()
+function gc_example(lambda,ImageDir,operation,ctrsLocation,numGridRows,numGridCols)
 % An example of how to segment a color image according to pixel colors.
 % Fisrt stage identifies k distinct clusters in the color space of the
 % image. Then the image is segmented according to these regions; each pixel
@@ -7,22 +7,25 @@ function gc_example()
 
 close all
 
-load('Cars/CarsCtrs.mat');
+load(ctrsLocation);
+%load('People/PeopleCtrs.mat');
 segResults = imgCtrs;
 
 for i=1:numel(imgCtrs)
-    image = imread(strcat('Cars/',imgCtrs(i).name));
+    image = imread(strcat(ImageDir,'/',imgCtrs(i).name));
+    %image = imread(strcat('People/',imgCtrs(i).name));
     ctrs = imgCtrs(i).ctrs;
     sz = size(image);
     imageForegroundSeeds = fliplr(ctrs);
     imageRandomForegroundSeeds = [randi(sz(1),[20 1]) randi(sz(2),[20 1])];
+    imageGridForegroundSeeds = getGridForegroundSeeds(numGridRows,numGridCols,sz(1),sz(2));
     imageBackgroundSeeds = [[1:sz(1)]' ones(sz(1),1); ones(sz(2),1) [1:sz(2)]'; [1:sz(1)]' ones(sz(1),1)*sz(2); ones(sz(2),1)*sz(1) [1:sz(2)]'];
     
     continueLoop = 1;
     counter = 0;
     while (continueLoop & (counter < 50))       
         try
-            Dc = getGraphCutComponents(25,40-counter,imageForegroundSeeds,imageBackgroundSeeds,image,30);            
+            Dc = getGraphCutComponents(lambda,40-counter,imageForegroundSeeds,imageBackgroundSeeds,image,30,operation);            
             continueLoop = 0;
         catch exception
             counter = counter + 1
@@ -41,7 +44,7 @@ for i=1:numel(imgCtrs)
     counter = 0;
     while (continueLoop & (counter < 50))       
         try            
-            randDc = getGraphCutComponents(25,40-counter,imageRandomForegroundSeeds,imageBackgroundSeeds,image,30);
+            randDc = getGraphCutComponents(lambda,40-counter,imageRandomForegroundSeeds,imageBackgroundSeeds,image,30,operation);
             continueLoop = 0;
         catch exception
             counter = counter + 1
@@ -64,12 +67,16 @@ for i=1:numel(imgCtrs)
     foregroundImageName = strrep(imgCtrs(i).name,'.jpg','_foreground.bmp');
     randomImageName = strrep(imgCtrs(i).name,'.jpg','_random.bmp');
         
-    imwrite(foregroundImageSeg,strcat('carsResult/',foregroundImageName),'bmp');
-    imwrite(randomImageSeg,strcat('carsResult/',randomImageName),'bmp');
+    imwrite(foregroundImageSeg,strcat(ImageDir,'/resultsLambda',num2str(lambda),'/',operation,'/',foregroundImageName),'bmp');
+    imwrite(randomImageSeg,strcat(ImageDir,'/resultsLambda',num2str(lambda),'/',operation,'/',randomImageName),'bmp');    
+    
+    %imwrite(foregroundImageSeg,strcat('People/resultsLambda55/entropyPenalty/',foregroundImageName),'bmp');
+    %imwrite(randomImageSeg,strcat('People/resultsLambda55/entropyPenalty/',randomImageName),'bmp');
     
     fprintf(strcat('Done with image: %s\n',imgCtrs(i).name));
 end
-save(strcat('carsResult/segMat','.mat'),'segResults');
+save(strcat(ImageDir,'/resultsLambda',num2str(lambda),'/',operation,'/segMat','.mat'),'segResults');
+%save(strcat('People/resultsLambda55/entropyPenalty/segMat','.mat'),'segResults');
 
 
 

@@ -1,9 +1,9 @@
 %fgSeeds and bgSeeds are lists of (row,col) coordinates as Nx2 dimensional matrices.
 %fliplr to reverse order of coordinates
-function [dataCost] = getGraphCutComponents(lambda,numBins,fgSeeds,bgSeeds,image,sampleWindowSize)
+function [dataCost] = getGraphCutComponents(lambda,fgSeeds,bgSeeds,image,sampleWindowSize,penalty,imageClusters)
     fgSeeds = round(fgSeeds);
     sz = size(image);
-    [dummyVals imageClusters] = getImageClusters(image,numBins);
+    %[dummyVals imageClusters] = getImageClusters(image,numBins);
     foregroundRGBValues = getForegroundRGBValues(fliplr(fgSeeds),image,sampleWindowSize,sampleWindowSize);
     backgroundRGBValues = getBackgroundRGBValues(image,sampleWindowSize);
     foregroundHist = getHistogramFromRGBValues(imageClusters,foregroundRGBValues);
@@ -11,8 +11,10 @@ function [dataCost] = getGraphCutComponents(lambda,numBins,fgSeeds,bgSeeds,image
     
     probForeGround = foregroundHist/sum(foregroundHist);
     foregroundEntropy = -probForeGround*log(probForeGround)';
+    foregroundStdDev = std(probForeGround);
     probBackground = backgroundHist/sum(backgroundHist);
     backgroundEntropy = -probBackground*log(probBackground)';
+    backgroundStdDev = std(probBackground);
  
     reshapedCat = reshape(double(image),sz(1)*sz(2),3);
     completeForeGroundDistances = dist2(reshapedCat,imageClusters);
@@ -20,8 +22,19 @@ function [dataCost] = getGraphCutComponents(lambda,numBins,fgSeeds,bgSeeds,image
     sumOfForegroundHist = sum(foregroundHist);
     sumOfBackgroundHist = sum(backgroundHist);
     
-    completeLogProbOfForegroundHist = double(foregroundHist/sumOfForegroundHist/foregroundEntropy);
-    completeLogProbObBackgroundHist = double(backgroundHist/sumOfBackgroundHist/backgroundEntropy);
+    if strcmp(penalty,'removedLog')
+        appliedFGPenalty = 1;
+        appliedBGPenalty = 1;
+    elseif strcmp(penalty,'stdDevPenalty')
+        appliedFGPenalty = foregroundStdDev;
+        appliedBGPenalty = backgroundStdDev;
+    else
+        appliedFGPenalty = 1/foregroundEntropy;
+        appliedBGPenalty = 1/backgroundEntropy;
+    end
+    
+    completeLogProbOfForegroundHist = double(foregroundHist/sumOfForegroundHist*appliedFGPenalty);
+    completeLogProbObBackgroundHist = double(backgroundHist/sumOfBackgroundHist*appliedBGPenalty);
     minimumValue = min(completeLogProbOfForegroundHist) - max(completeLogProbObBackgroundHist);
     maximumValue = max(completeLogProbOfForegroundHist) - min(completeLogProbObBackgroundHist);
     maxDifference = maximumValue - minimumValue;
