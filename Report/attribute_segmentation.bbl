@@ -1,0 +1,45 @@
+\begin{thebibliography}{1}\itemsep=-1pt
+
+\bibitem{Berg2012}
+A.~C. Berg, T.~L. Berg, H.~Daume, J.~Dodge, A.~Goyal, H.~Xufeng, A.~Mensch,
+  M.~Mitchell, A.~Sood, K.~Stratos, and K.~Yamaguchi.
+\newblock Understanding and predicting importance in images.
+\newblock In {\em CVPR}, June 2012.
+
+\bibitem{Boykov2001}
+Y.~Boykov, O.~Veksler, and R.~Zabih.
+\newblock Fast approximate energy minimization via graph cuts.
+\newblock In {\em IEEE Transactions on PAMI}, November 2001.
+
+\bibitem{Carreira2010}
+J.~Carreira.
+\newblock Constrained parametric min-cuts for automatic object segmentation.
+\newblock In {\em CVPR}, June 2010.
+
+\bibitem{Choi2012}
+W.~Choi and S.~Savarese.
+\newblock A unified framework for multi-target tracking and collective activity
+  recognition.
+\newblock In {\em ECCV}, October 2012.
+
+\bibitem{Farhadi2010}
+A.~Farhadi, I.~Endres, and D.~Hoiem.
+\newblock Attribute-centric recognition for cross-category generalization.
+\newblock In {\em CVPR}, 2010.
+
+\bibitem{Farhadi2009}
+A.~Farhadi, I.~Endres, D.~Hoiem, and D.~Forsyth.
+\newblock Describing objects by their attributes.
+\newblock In {\em CVPR}, 2009.
+
+\bibitem{Gould2010}
+S.~Gould, J.~Rodgers, D.~Cohen, G.~Elidan, and D.~Koller.
+\newblock Multi-class segmentation with relative location prior.
+\newblock In {\em International Journal of Computer Vision}, December 2008.
+
+\bibitem{Ma2007}
+H.~Ma, J.~Zhu, M.~R. Lyu, and I.~King.
+\newblock Bridging the semantic gap between image contents and tags.
+\newblock In {\em Journal of LATEX CLASS FILES, VOL. 6 NO. 1}, January 2007.
+
+\end{thebibliography}
