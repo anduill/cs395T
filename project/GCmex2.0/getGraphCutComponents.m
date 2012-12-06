@@ -46,9 +46,11 @@ function [dataCost] = getGraphCutComponents(lambda,fgSeeds,bgSeeds,image,sampleW
         foregroundIndices(foregroundIndices==histIndex)=completeLogProbOfForegroundHist(histIndex);
         backgroundIndices(backgroundIndices==histIndex)=completeLogProbObBackgroundHist(histIndex);
     end
-    scaledSecondChannel = abs((foregroundIndices-backgroundIndices)/maxDifference)*255+lambda;
-    scaledSecondChannel = reshape(scaledSecondChannel,sz(1),sz(2));
+    scaledSecondChannel_unweighted = abs((foregroundIndices-backgroundIndices)/maxDifference)*255;
+    scaledSecondChannel = reshape(scaledSecondChannel_unweighted,sz(1),sz(2));
     secondChannelMedian = median(median(scaledSecondChannel));
+    scaledSecondChannel = abs((foregroundIndices-backgroundIndices)/maxDifference)*255+lambda*0.114-25*0.114;
+    scaledSecondChannel = reshape(scaledSecondChannel,sz(1),sz(2));
     firstChannel = ones(sz(1),sz(2))*secondChannelMedian;
     
     for bgSeedRow=bgSeeds(:,1:2)'
