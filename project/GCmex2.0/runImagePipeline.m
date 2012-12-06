@@ -1,11 +1,11 @@
 function runImagePipeline()
 
-%run_EveryThing([25 40 55 70],'People',{'entropyPenalty';'removedLog';'stdDevPenalty'},3,'People/Results/PeopleCtrs.mat',4,5);
-run_EveryThing([25 40 55 70],'Cars',{'entropyPenalty';'removedLog';'stdDevPenalty'},3,'Cars/attPoints/CarsCtrs.mat',4,5);
-%run_EveryThing([25 40 55 70],'Buses',{'entropyPenalty';'removedLog';'stdDevPenalty'},3,'Buses/Results/BusesCtrs.mat',4,5);
-%run_EveryThing([25 40 55 70],'FarmAnims',{'entropyPenalty';'removedLog';'stdDevPenalty'},3,'FarmAnims/Results/FarmAnimsCtrs.mat',4,5);
-%run_EveryThing([25 40 55 70],'HouseAnims',{'entropyPenalty';'removedLog';'stdDevPenalty'},3,'HouseAnims/Results/HouseAnimsCtrs.mat',4,5);
-%run_EveryThing([25 40 55 70],'Monitors',{'entropyPenalty';'removedLog';'stdDevPenalty'},3,'Monitors/Results/MonitorsCtrs.mat',4,5);
+run_EveryThing([25 40 55 70],'People',{'entropyPenalty';'removedLog';'stdDevPenalty'},3,'People/Results/PeopleCtrs.mat',4,5);
+%run_EveryThing([25 40 55 70],'Cars',{'entropyPenalty';'removedLog';'stdDevPenalty'},3,'Cars/attPoints/CarsCtrs.mat',4,5);
+run_EveryThing([25 40 55 70],'Buses',{'entropyPenalty';'removedLog';'stdDevPenalty'},3,'Buses/Results/BusesCtrs.mat',4,5);
+run_EveryThing([25 40 55 70],'FarmAnims',{'entropyPenalty';'removedLog';'stdDevPenalty'},3,'FarmAnims/Results/FarmAnimsCtrs.mat',4,5);
+run_EveryThing([25 40 55 70],'HouseAnims',{'entropyPenalty';'removedLog';'stdDevPenalty'},3,'HouseAnims/Results/HouseAnimsCtrs.mat',4,5);
+run_EveryThing([25 40 55 70],'Monitors',{'entropyPenalty';'removedLog';'stdDevPenalty'},3,'Monitors/Results/MonitorsCtrs.mat',4,5);
 % run_EveryThing(25,'People','entropyPenalty','People/Results/PeopleCtrs.mat',4,5);
 % run_EveryThing(25,'People','removedLog','People/Results/PeopleCtrs.mat',4,5);
 % run_EveryThing(40,'People','stdDevPenalty','People/Results/PeopleCtrs.mat',4,5);
